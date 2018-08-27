@@ -417,6 +417,7 @@ public class AddressBook {
      */
     private static String executeAddPerson(String commandArgs) {
         // try decoding a person from the raw args
+
         final Optional<String[]> decodeResult = decodePersonFromString(commandArgs);
 
         // checks if args are valid (decode result will not be present if the person is invalid)
@@ -426,8 +427,28 @@ public class AddressBook {
 
         // add the person as specified
         final String[] personToAdd = decodeResult.get();
-        addPersonToAddressBook(personToAdd);
-        return getMessageForSuccessfulAddPerson(personToAdd);
+        if(isPersonExist(personToAdd[PERSON_DATA_INDEX_NAME])) {
+           // System.out.format("name to be added is %s\n", personToAdd[PERSON_DATA_INDEX_NAME]);
+            addPersonToAddressBook(personToAdd);
+            return getMessageForSuccessfulAddPerson(personToAdd);
+        }
+      return String.format("Person already exist");
+    }
+
+    private static boolean isPersonExist(String name){
+        //this is to tokenize the string of keywords
+        final Set<String> keywords = extractKeywordsFromFindPersonArgs(name);
+
+        //pass keywords into finder
+        final ArrayList<String[]> personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
+        for(String[] person : personsFound){
+           // System.out.format("name in list is m%sm and compare is m%sm \n", person[0],name);
+            if(name.equals(person[0])){
+               // System.out.format("exist liao");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -450,7 +471,10 @@ public class AddressBook {
      * @return feedback display message for the operation result
      */
     private static String executeFindPersons(String commandArgs) {
+        //this is to tokenize the string of keywords
         final Set<String> keywords = extractKeywordsFromFindPersonArgs(commandArgs);
+
+        //pass keywords into finder
         final ArrayList<String[]> personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
         showToUser(personsFound);
         return getMessageForPersonsDisplayedSummary(personsFound);
